@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 500px; margin-bottom: 30px; border-radius: 10px; }
+    td img {
+      width: 100px; height: 100px;
+      object-fit: cover; cursor: pointer;
+      border-radius: 8px;
+    }
+    body { background: #f8f9fa; padding: 30px; }
+    .container { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .table th { background: #e9ecef; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="mb-4">📍 Visitor Map</h2>
+    <div id="map"></div>
+
+    <h2 class="mt-5 mb-3">📒 Visitor Logs</h2>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>IP</th>
+            <th>User Agent</th>
+            <th>GPS</th>
+            <th>Photo</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% logs.forEach(log => {
+          const gpsMatch = log.latitude && log.longitude ? `(${log.latitude}, ${log.longitude})` : 'N/A';
+          const imagePath = log.image_path ? `/images/${log.image_path}` : '';
+        %>
+          <tr>
+            <td><%= log.timestamp %></td>
+            <td><%= log.ip %></td>
+            <td style="max-width: 250px;"><%= log.user_agent %></td>
+            <td><%= gpsMatch %></td>
+            <td>
+              <% if (imagePath) { %>
+                <img src="<%= imagePath %>" alt="Photo" onclick="window.open('<%= imagePath %>', '_blank')" />
+              <% } else { %> No image <% } %>
+            </td>
+          </tr>
+        <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([20.5937, 78.9629], 4); // India
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    <% logs.forEach(log => {
+      if (log.latitude && log.longitude) {
+    %>
+    L.marker([<%= log.latitude %>, <%= log.longitude %>]).addTo(map)
+      .bindPopup("<b>IP:</b> <%= log.ip %><br><b>Time:</b> <%= log.timestamp %>");
+    <% }}); %>
+  </script>
+</body>
+</html>
